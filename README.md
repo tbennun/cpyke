@@ -19,7 +19,7 @@ int a = cpyke("1 + 2");
 printf("a = %d\n", a); // a = 3
 
 cpyke("import numpy as np");
-cpy::ndarray<double> b = cpyke("np.random.rand(something, else)", a, 4);
+cpy::ndarray<double> b = cpyke("np.random.rand(something, else_)", a, 4);
 cpyke("print('shape:', b.shape)", b); // shape: (3, 4)
 ```
 
