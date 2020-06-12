@@ -74,26 +74,38 @@ def invoke(code, args, globs):
 
     # Update new locals (except for the ones given externally)
     globs.update({k: v for k, v in locs.items() if k not in variables.args})
-    
+
     return res
 
 def pip_install(pkg):
     import os
     import subprocess
     import sys
+
+    origin = os.path.dirname(os.__file__)
+
     # Try to find interpreter
-    interpreter = os.path.join(os.path.dirname(os.__file__), '..', 'bin', 'python')
-    if not os.path.isfile(interpreter):
-        interpreter += '.exe'
-        if not os.path.isfile(interpreter):
-            interpreter = os.path.join(os.path.dirname(os.__file__), '..', 'python')
-            if not os.path.isfile(interpreter):
-                interpreter += '.exe'
-                if not os.path.isfile(interpreter):
-                    raise LookupError('Cannot determine interpreter path')
+    options = [
+        os.path.join(origin, '..', 'bin', 'python'),
+        os.path.join(origin, '..', 'bin', 'python.exe'),
+        os.path.join(origin, '..', '..', 'bin', 'python'),
+        os.path.join(origin, '..', '..', 'bin', 'python.exe'),
+        os.path.join(origin, '..', 'python'),
+        os.path.join(origin, '..', 'python.exe'),
+        os.path.join(origin, '..', '..', 'python'),
+        os.path.join(origin, '..', '..', 'python.exe'),
+    ]
+    for option in options:
+        interpreter = option
+        if os.path.isfile(interpreter):
+            break
+    else:
+        raise LookupError('Cannot determine interpreter path')
+    
     # Invoke the pip module
     subprocess.check_call([interpreter, '-m', 'pip', 'install', pkg])
 
 if __name__ == '__main__':
+    pip_install('numpy')
     invoke('import numpy as np', [], globals())
     invoke('np.random.rand(n, m)', [20, 30], globals())
