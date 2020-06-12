@@ -35,6 +35,9 @@ class InputVariableFinder(ast.NodeVisitor):
 
     def visit_Name(self, node):
         if isinstance(node.ctx, ast.Load) and node.id not in self.defined:
+            if node.id.startswith('__cpyke'):
+                raise NameError('Cannot define variables that start'
+                                ' with "__cpyke"')
             self.args.append(node.id)
         self.defined.add(node.id)
         self.generic_visit(node)
@@ -69,7 +72,9 @@ def invoke(code, args, globs):
     else:
         res = None
 
-    globs.update(locs)
+    # Update new locals (except for the ones given externally)
+    globs.update({k: v for k, v in locs.items() if k not in variables.args})
+    
     return res
 
 def pip_install(pkg):
