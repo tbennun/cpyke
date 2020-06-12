@@ -84,7 +84,7 @@ namespace cpy
     template <typename T>
     struct ndarray
     {
-        void *data;
+        T *data;
         std::vector<size_t> shape;
         std::vector<size_t> strides;
 
@@ -132,6 +132,56 @@ namespace cpy
 
         template <typename T>
         TypePair(T &a) : type(static_cast<cpyke_type>(TypeToCpyke<T>::cpyketype)), arg(&a) {}
+    };
+
+    // cpyke result type. castable to Python PODs, pointers, and ndarrays
+    class result
+    {
+    protected:
+        union {
+            void *ptr;
+            bool boolean;
+            long long integer;
+            double floating;
+        } data;
+        cpyke_type type;
+
+    public:
+        result(nullptr_t null) : type(CPYKE_VOID) { data.ptr = null; }
+        result(void *ptr, cpyke_type t) : type(t) { data.ptr = ptr; }
+        result(bool b) : type(CPYKE_BOOL) { data.boolean = b; }
+        result(long long i) : type(CPYKE_LONGLONG) { data.integer = i; }
+        result(double f) : type(CPYKE_DOUBLE) { data.floating = f; }
+        virtual ~result()
+        {
+            // Delete as an ndarray (to allow dynamic deletion)
+            if (type & CPYKE_NDARRAY)
+                delete (ndarray<void> *)data.ptr;
+        }
+
+#define RESULT_OP(typ, uniontyp) \
+    operator typ() { return (typ)data.uniontyp; }
+
+        RESULT_OP(bool, boolean)
+        RESULT_OP(char, integer)
+        RESULT_OP(unsigned char, integer)
+        RESULT_OP(short, integer)
+        RESULT_OP(unsigned short, integer)
+        RESULT_OP(int, integer)
+        RESULT_OP(unsigned int, integer)
+        RESULT_OP(long, integer)
+        RESULT_OP(unsigned long, integer)
+        RESULT_OP(long long, integer)
+        RESULT_OP(unsigned long long, integer)
+        RESULT_OP(float, floating)
+        RESULT_OP(double, floating)
+
+        template <typename T>
+        operator ndarray<T>()
+        {
+            ndarray<T> *dt = (ndarray<T> *)data.ptr;
+            return *dt;
+        }
     };
 
 } // namespace cpy

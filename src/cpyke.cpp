@@ -152,11 +152,38 @@ py::object pytype_from_pair(TypePair &pair)
     }
 }
 
-CPYKE_EXPORTED void *_cpyke(const char *script, TypePair *data, int nargs)
+result pyobj_to_result(py::object &obj)
 {
-    printf("Nargs: %d\n", nargs);
-    printf("Script: %s\n", script);
+    // Check POD types
+    if (py::isinstance<py::bool_>(obj))
+        return bool(py::bool_(obj));
+    else if (py::isinstance<py::int_>(obj))
+        return (long long)(py::int_(obj));
+    else if (py::isinstance<py::float_>(obj))
+        return double(py::float_(obj));
+    else if (py::isinstance<py::array>(obj))
+    {
+        py::array arr(obj);
+        void *ptr = (void *)arr.data();
+        std::vector<size_t> shape(arr.ndim()), strides(arr.ndim());
+        for (ssize_t i = 0; i < arr.ndim(); ++i)
+        {
+            shape[i] = arr.shape(i);
+            strides[i] = arr.strides(i);
+        }
+        cpy::ndarray<void> *ndresult = new cpy::ndarray<void>(ptr, shape, strides);
+        return result(ndresult, CPYKE_NDARRAY);
+    }
+    else
+    {
+        printf("Unrecognized result type from Python: %s\n",
+               std::string(py::str(obj.get_type())).c_str());
+        return nullptr;
+    }
+}
 
+CPYKE_EXPORTED result _cpyke(const char *script, TypePair *data, int nargs)
+{
     auto locals = py::dict();
     locals["statements"] = script;
 
@@ -172,9 +199,9 @@ CPYKE_EXPORTED void *_cpyke(const char *script, TypePair *data, int nargs)
     try
     {
         py::exec(R"(
-            import cpyke
-            result = cpyke.invoke(statements, args, globals())
-        )",
+                 import cpyke
+                 result = cpyke.invoke(statements, args, globals())
+                 )",
                  py::globals(), locals);
     }
     catch (const std::exception &ex)
@@ -187,27 +214,7 @@ CPYKE_EXPORTED void *_cpyke(const char *script, TypePair *data, int nargs)
     if (result.is_none())
         return nullptr;
 
-    if (py::isinstance<py::int_>(result))
-    {
-        printf("IS AN INT\n");
-        return reinterpret_cast<void *>(int(py::int_(result)));
-    }
-    else if (py::isinstance<py::array>(result))
-    {
-        printf("IS AN ARRAY\n");
-        py::array arr(result);
-        void *ptr = (void *)arr.data();
-        std::vector<size_t> shape(arr.ndim()), strides(arr.ndim());
-        for (ssize_t i = 0; i < arr.ndim(); ++i)
-        {
-            shape[i] = arr.shape(i);
-            strides[i] = arr.strides(i);
-        }
-        return (void *)new cpy::ndarray<void>(ptr, shape, strides);
-    }
-    else
-        printf("UNRECOGNIZED\n");
-    return nullptr;
+    return pyobj_to_result(result);
 }
 
 CPYKE_EXPORTED bool cpyke_pip_install(const char *package)

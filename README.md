@@ -29,9 +29,9 @@ With `cpyke_pip_install`, you can install packages directly from your C++
 program, ensuring anyone who runs your application will have the right modules.
 
 ```cpp
-	cpyke("import seaborn as sns"); // ModuleNotFoundError
-	cpyke_pip_install("seaborn");
-	cpyke("import seaborn as sns"); // import successful!
+cpyke("import seaborn as sns"); // ModuleNotFoundError
+cpyke_pip_install("seaborn");
+cpyke("import seaborn as sns"); // import successful!
 ```
 
 ## Behind the scenes
@@ -41,11 +41,6 @@ code to find undefined variables (by order of appearance), mapping them to the a
 
 For example: `cpyke("print(a, b.c)", d, e);` will map `d` in C++ to `a` in Python,
 and `e` in C++ to `b` in Python.
-
-## Dependencies
-All dependencies are included as git submodules. Compiling cpyke or linking 
-with it requires only a C++11 compiler (GCC 4.8 or newer, clang 3.3 or newer, 
-VS2015 update 3 or newer etc.).
 
 ## Compiling cpyke
 ```shell
@@ -70,6 +65,10 @@ $ sudo make install
 Nothing more than adding cpyke as a library. For example:
 `g++ myfile.cpp -lcpyke -o myfile`
 
+## Dependencies and supported compilers
+All dependencies are included as git submodules. Compiling cpyke or linking 
+with it requires only a C++11 compiler (GCC 4.8 or newer, clang 3.3 or newer, 
+VS2015 update 3 or newer etc.).
 
 ## Contributing
 
