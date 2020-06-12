@@ -42,7 +42,7 @@ code to find undefined variables (by order of appearance), mapping them to the a
 For example: `cpyke("print(a, b.c)", d, e);` will map `d` in C++ to `a` in Python,
 and `e` in C++ to `b` in Python.
 
-## Compiling cpyke
+## Compiling and installing cpyke
 ```shell
 $ git clone --recursive https://github.com/tbennun/cpyke.git
 $ cd cpyke
@@ -59,6 +59,9 @@ $ cmake ..
 $ make
 # To install: 
 $ sudo make install
+# If you wish to install manually, ensure cpyke.h and libcpyke.so are accessible
+# (using CPATH and LD_LIBRARY_PATH) and install the cpyke Python module with:
+# python -m pip install /path/to/cpyke
 ```
 
 ## Linking with cpyke

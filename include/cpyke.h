@@ -2,7 +2,7 @@
 #define __CPYKE_H
 
 #include <string>
-#include "types.h"
+#include "cpyke_types.h"
 
 #ifndef CPYKE_INTERNAL
 #ifdef _MSC_VER
