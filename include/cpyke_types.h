@@ -2,6 +2,7 @@
 #ifndef __CPYKE_TYPES_H
 #define __CPYKE_TYPES_H
 
+#include <cstddef>
 #include <vector>
 
 namespace cpy
@@ -147,7 +148,7 @@ namespace cpy
         cpyke_type type;
 
     public:
-        result(nullptr_t null) : type(CPYKE_VOID) { data.ptr = null; }
+        result(std::nullptr_t null) : type(CPYKE_VOID) { data.ptr = null; }
         result(void *ptr, cpyke_type t) : type(t) { data.ptr = ptr; }
         result(bool b) : type(CPYKE_BOOL) { data.boolean = b; }
         result(long long i) : type(CPYKE_LONGLONG) { data.integer = i; }
