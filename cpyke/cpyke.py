@@ -1,4 +1,5 @@
 import ast
+import sys
 from typing import Any, Dict
 
 __all__ = [
@@ -84,26 +85,8 @@ def pip_install(pkg):
 
     origin = os.path.dirname(os.__file__)
 
-    # Try to find interpreter
-    options = [
-        os.path.join(origin, '..', 'bin', 'python'),
-        os.path.join(origin, '..', 'bin', 'python.exe'),
-        os.path.join(origin, '..', '..', 'bin', 'python'),
-        os.path.join(origin, '..', '..', 'bin', 'python.exe'),
-        os.path.join(origin, '..', 'python'),
-        os.path.join(origin, '..', 'python.exe'),
-        os.path.join(origin, '..', '..', 'python'),
-        os.path.join(origin, '..', '..', 'python.exe'),
-    ]
-    for option in options:
-        interpreter = option
-        if os.path.isfile(interpreter):
-            break
-    else:
-        raise LookupError('Cannot determine interpreter path')
-    
     # Invoke the pip module
-    subprocess.check_call([interpreter, '-m', 'pip', 'install', pkg])
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', pkg])
 
 if __name__ == '__main__':
     pip_install('numpy')
